@@ -351,8 +351,8 @@ h2.title{font-family:var(--disp);font-size:clamp(30px,5.2vw,58px);line-height:1;
 .reactbar button:hover{transform:scale(1.28)}
 .reactbar button:active{transform:scale(.85)}
 .floatlayer{position:fixed;inset:0;pointer-events:none;z-index:71;overflow:hidden}
-.floatemo{position:absolute;bottom:64px;will-change:transform,opacity;animation:floatup 2.6s ease-out forwards}
-@keyframes floatup{0%{opacity:0;transform:translateY(0) scale(.5)}12%{opacity:1}100%{opacity:0;transform:translateY(-72vh) scale(1.25)}}
+.floatemo{position:absolute;bottom:60px;will-change:transform,opacity;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4));animation:floatup 3s ease-out forwards}
+@keyframes floatup{0%{opacity:0;transform:translateY(0) translateX(0) scale(.4) rotate(0)}12%{opacity:1}100%{opacity:0;transform:translateY(-76vh) translateX(var(--dx,0)) scale(1.35) rotate(var(--rot,0))}}
 @media(max-width:760px){.reactbar{bottom:70px}}
 .mp .arcbtn{font-size:12px;padding:9px 12px}
 .wall{margin-top:24px}
@@ -1071,7 +1071,7 @@ window.addEventListener('load', function(){
   function gotoPoll(qi){ pollQi=((qi%POLL.length)+POLL.length)%POLL.length; const sl=document.getElementById('pollSlider'); if(sl)sl.value=50; pollShow(); }
 
   /* ── emoji reactions ── */
-  const REACT=['❤️','😂','🔥','😮','👏','💯'];
+  const REACT=['❤️','😂','🔥','😮','👏','💯','👽','🙄'];
   function reactInit(){
     const bar=document.getElementById('reactbar'); bar.innerHTML='';
     REACT.forEach(e=>{const btn=document.createElement('button');btn.textContent=e;btn.onclick=()=>sendReact(e);bar.appendChild(btn);});
@@ -1087,8 +1087,10 @@ window.addEventListener('load', function(){
   function floatEmoji(e){
     const layer=document.getElementById('floatlayer'); if(!layer)return;
     const s=document.createElement('div');s.className='floatemo';s.textContent=e;
-    s.style.left=(8+Math.random()*84)+'%';s.style.fontSize=(24+Math.random()*18)+'px';
-    layer.appendChild(s);setTimeout(()=>s.remove(),2700);
+    s.style.left=(6+Math.random()*88)+'%';s.style.fontSize=(58+Math.random()*46)+'px';
+    s.style.setProperty('--dx',(Math.random()*120-60).toFixed(0)+'px');
+    s.style.setProperty('--rot',(Math.random()*70-35).toFixed(0)+'deg');
+    layer.appendChild(s);setTimeout(()=>s.remove(),3100);
   }
 
   /* poll controls (wired once) */
