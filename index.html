@@ -652,6 +652,10 @@ updateDots();onScroll();
 let coins=0;
 function coin(n){coins+=n;document.getElementById('coin').textContent='◈ '+String(coins).padStart(2,'0')}
 
+/* ═══ sync bridge (set by multiplayer module when in a room) ═══ */
+let netPush=null;
+function sendNet(ch,data){ if(netPush) try{ netPush(ch,data); }catch(e){} }
+
 /* ═══ vocabulary ═══ */
 const VOCAB=[
   {p:'level up',g:'to improve, get better',d:'To reach a higher stage — in a game or in life.',e:'She levelled up her whole career by learning to code.'},
@@ -736,15 +740,23 @@ function buildMatch(){
   PAIRS.map((_,i)=>i).sort(()=>Math.random()-.5).forEach(i=>L.appendChild(mk(PAIRS[i][0],i,'l')));
   PAIRS.map((_,i)=>i).sort(()=>Math.random()-.5).forEach(i=>R.appendChild(mk(PAIRS[i][1],i,'r')));
 }
+function lockPair(id){
+  const items=[...document.querySelectorAll('#mLeft .mi[data-id="'+id+'"], #mRight .mi[data-id="'+id+'"]')];
+  if(!items.length||items.every(x=>x.classList.contains('ok')))return;
+  items.forEach(x=>{x.classList.remove('sel');x.classList.add('ok')});
+  mScore=document.querySelectorAll('#mLeft .mi.ok').length;
+  document.getElementById('mScore').textContent=mScore;
+  document.getElementById('mMsg').textContent=mScore===5?'All five locked. Now say each as a sentence with "helps you".':'Locked — keep going.';
+}
+function applyMatch(v){ if(v&&v.type==='lock') lockPair(v.id); }
 function mTap(b){
   if(b.classList.contains('ok'))return;
   if(!mSel){mSel=b;b.classList.add('sel');document.getElementById('mMsg').textContent='now pick its skill →';return}
   if(mSel===b){b.classList.remove('sel');mSel=null;return}
   if(mSel.dataset.side===b.dataset.side){mSel.classList.remove('sel');mSel=b;b.classList.add('sel');return}
   if(mSel.dataset.id===b.dataset.id){
-    [mSel,b].forEach(x=>{x.classList.remove('sel');x.classList.add('ok')});mScore++;coin(2);
-    document.getElementById('mScore').textContent=mScore;
-    document.getElementById('mMsg').textContent=mScore===5?'All five locked. Now say each as a sentence with "helps you".':'Locked — keep going.';
+    const id=mSel.dataset.id;mSel.classList.remove('sel');
+    lockPair(id);coin(2);sendNet('match',{type:'lock',id});
   }else{
     const a=mSel;[a,b].forEach(x=>{x.classList.add('no');setTimeout(()=>x.classList.remove('no'),350)});
     a.classList.remove('sel');document.getElementById('mMsg').textContent='Not a match — think what that game is famous for.';
@@ -771,7 +783,8 @@ function showQ(){
   const q=QUIZ[qi];qLock=false;
   document.getElementById('qText').innerHTML=q.t;
   const box=document.getElementById('qOpts');box.innerHTML='';
-  q.o.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.onclick=()=>qAns(i,b);box.appendChild(b)});
+  q.o.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=()=>{if(qLock)return;sendNet('quiz',{type:'ans',qi,i});qAns(i,b)};box.appendChild(b)});
   document.getElementById('qFb').textContent='';document.getElementById('qNext').disabled=true;
   [...qdots.children].forEach((d,i)=>d.classList.toggle('now',i===qi&&!d.classList.contains('ok')&&!d.classList.contains('bad')));
 }
@@ -785,8 +798,14 @@ function qAns(i,btn){
   document.getElementById('qNext').disabled=qi>=QUIZ.length-1;
   if(qi>=QUIZ.length-1)fb.textContent+='  →  Final: '+qScore+'/'+QUIZ.length+'.';
 }
-document.getElementById('qNext').onclick=()=>{if(qi<QUIZ.length-1){qi++;showQ()}};
-document.getElementById('qAgain').onclick=()=>{qi=0;qScore=0;document.getElementById('qScore').textContent='0';[...qdots.children].forEach(d=>d.className='qd');showQ()};
+function applyQuiz(v){
+  if(!v)return;
+  if(v.type==='ans'){ if(v.qi===qi && !qLock){ const btn=document.getElementById('qOpts').children[v.i]; if(btn) qAns(v.i,btn); } }
+  else if(v.type==='nav'){ if(v.qi!==qi && v.qi>=0 && v.qi<QUIZ.length){ qi=v.qi; showQ(); } }
+  else if(v.type==='reset'){ qi=0;qScore=0;document.getElementById('qScore').textContent='0';[...qdots.children].forEach(d=>d.className='qd');showQ(); }
+}
+document.getElementById('qNext').onclick=()=>{if(qi<QUIZ.length-1){qi++;showQ();sendNet('quiz',{type:'nav',qi})}};
+document.getElementById('qAgain').onclick=()=>{qi=0;qScore=0;document.getElementById('qScore').textContent='0';[...qdots.children].forEach(d=>d.className='qd');showQ();sendNet('quiz',{type:'reset'})};
 showQ();
 
 /* ═══ wheel ═══ */
@@ -832,10 +851,10 @@ function drawWheel(){
   svg.innerHTML=h;
 }
 drawWheel();
-document.getElementById('spin').onclick=()=>{
+function doSpin(pick){
   if(spinning)return;spinning=true;
   document.getElementById('wheel').classList.add('spinning');
-  const n=WHEEL.length,step=360/n,pick=Math.floor(Math.random()*n),target=360*5-(pick*step+step/2);
+  const n=WHEEL.length,step=360/n,target=360*5-(pick*step+step/2);
   wRot=target;document.getElementById('wsvg').style.transform='rotate('+wRot+'deg)';
   document.getElementById('wOut').innerHTML='<p class="idle">spinning…</p>';
   setTimeout(()=>{
@@ -846,6 +865,13 @@ document.getElementById('spin').onclick=()=>{
     const svg=document.getElementById('wsvg');
     setTimeout(()=>{svg.style.transition='none';svg.style.transform='rotate('+(wRot%360)+'deg)';requestAnimationFrame(()=>svg.style.transition='')},60);
   },3650);
+}
+function applyWheel(v){ if(v&&typeof v.pick==='number') doSpin(v.pick); }
+document.getElementById('spin').onclick=()=>{
+  if(spinning)return;
+  const pick=Math.floor(Math.random()*WHEEL.length);
+  sendNet('wheel',{pick});
+  doSpin(pick);
 };
 
 /* ═══ pledge ═══ */
@@ -884,7 +910,7 @@ window.addEventListener('load', function(){
   let pid=localStorage.getItem('mp_pid'); if(!pid){pid=Math.random().toString(36).slice(2,8);localStorage.setItem('mp_pid',pid);}
   let myName=localStorage.getItem('mp_name')||'';
   const myColor=PAL[ihash(pid)%PAL.length];
-  let db=null, code=null, players={}, playersRef=null, pledgesRef=null;
+  let db=null, code=null, players={}, playersRef=null, pledgesRef=null, syncRefs=[];
 
   const ready = FIREBASE_CONFIG.databaseURL && typeof firebase!=='undefined';
   if(ready){ try{ firebase.initializeApp(FIREBASE_CONFIG); db=firebase.database(); }catch(e){ db=null; } }
@@ -932,12 +958,21 @@ window.addEventListener('load', function(){
     playersRef.on('value',s=>{players=s.val()||{};paintWho();});
     pledgesRef=db.ref('sessions/'+code+'/pledges');
     pledgesRef.on('value',s=>paintWall(s.val()||{}));
+    /* live game sync: wheel + quiz + match */
+    netPush=(ch,data)=>db.ref('sessions/'+code+'/sync/'+ch).set(Object.assign({by:pid,t:Date.now()},data));
+    syncRefs=['wheel','quiz','match'].map(ch=>{
+      const r=db.ref('sessions/'+code+'/sync/'+ch);
+      r.on('value',s=>{const v=s.val();if(!v||v.by===pid)return;
+        if(ch==='wheel')applyWheel(v); else if(ch==='quiz')applyQuiz(v); else if(ch==='match')applyMatch(v);});
+      return r;
+    });
     const wall=document.getElementById('wall'), post=document.getElementById('wallPost');
     if(wall)wall.style.display='block'; if(post)post.style.display='inline-block';
     render(); mtoast('You are in room '+code);
   }
   function leave(){
     if(playersRef)playersRef.off(); if(pledgesRef)pledgesRef.off();
+    syncRefs.forEach(r=>r.off()); syncRefs=[]; netPush=null;
     if(code)db.ref('sessions/'+code+'/players/'+pid).remove();
     code=null; try{location.hash='';}catch(e){}
     const wall=document.getElementById('wall'), post=document.getElementById('wallPost');
