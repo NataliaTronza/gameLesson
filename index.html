@@ -332,8 +332,28 @@ h2.title{font-family:var(--disp);font-size:clamp(30px,5.2vw,58px);line-height:1;
   background:var(--deep);border:2px dashed var(--yellow);border-radius:8px;padding:10px;margin:6px 0 10px}
 .mp small{font-family:var(--mono);font-size:11px;color:var(--ink-3);line-height:1.55;display:block;margin-top:8px}
 .who{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
-.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-family:var(--disp);font-size:12px;
-  color:var(--bg);border:2px solid rgba(255,255,255,.35)}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:17px;
+  background:var(--deep);border:2px solid rgba(255,255,255,.35)}
+.emopick{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.emopick button{font-size:17px;width:30px;height:30px;border-radius:50%;border:2px solid transparent;background:var(--deep);line-height:1}
+.emopick button.on{border-color:var(--cyan);background:#241a52}
+.pollq{font-family:var(--disp);font-size:clamp(17px,2.7vw,28px);text-transform:uppercase;line-height:1.18;margin-bottom:8px;text-align:center;color:var(--ink)}
+.scale{position:relative;height:118px;margin:18px 0 4px}
+.track{position:absolute;top:70px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan));box-shadow:0 0 12px rgba(165,123,255,.4)}
+.pmark{position:absolute;transform:translateX(-50%);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:var(--panel);border:2px solid var(--cyan);transition:left .25s ease;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.pmark.me{width:42px;height:42px;font-size:23px;border-width:3px;z-index:4;box-shadow:0 0 14px rgba(255,216,77,.6)}
+.polelbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12.5px;color:var(--ink-2);margin-top:12px;font-weight:700}
+.pollslider{width:100%;accent-color:var(--pink);height:30px;margin-top:10px}
+.pollhint{font-family:var(--mono);font-size:12.5px;color:var(--ink-3);text-align:center;margin-top:8px;line-height:1.6}
+.reactbar{position:fixed;right:16px;bottom:16px;z-index:72;display:none;gap:5px;background:var(--panel);border:2px solid var(--purple);border-radius:30px;padding:7px 11px;box-shadow:0 8px 26px rgba(0,0,0,.55)}
+.reactbar.on{display:flex}
+.reactbar button{font-size:22px;line-height:1;transition:transform .1s}
+.reactbar button:hover{transform:scale(1.28)}
+.reactbar button:active{transform:scale(.85)}
+.floatlayer{position:fixed;inset:0;pointer-events:none;z-index:71;overflow:hidden}
+.floatemo{position:absolute;bottom:64px;will-change:transform,opacity;animation:floatup 2.6s ease-out forwards}
+@keyframes floatup{0%{opacity:0;transform:translateY(0) scale(.5)}12%{opacity:1}100%{opacity:0;transform:translateY(-72vh) scale(1.25)}}
+@media(max-width:760px){.reactbar{bottom:70px}}
 .mp .arcbtn{font-size:12px;padding:9px 12px}
 .wall{margin-top:24px}
 .wall-h{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--cyan);margin-bottom:12px}
@@ -523,6 +543,26 @@ h2.title{font-family:var(--disp);font-size:clamp(30px,5.2vw,58px);line-height:1;
   </div>
 </section>
 
+<!-- ══════════ LIVE POLL ══════════ -->
+<section class="band" id="poll" data-name="Live poll">
+  <div class="decor"><div class="par" data-speed="-0.14" style="top:12%;right:3%;width:150px"><img class="aimg" data-a="planet3" alt=""></div></div>
+  <div class="inner">
+    <div class="eyebrow">Level 7 · where do you stand?</div>
+    <h2 class="title">Take a side</h2>
+    <p class="lead">Drag your face along the line. Everyone in the room shows up live — then talk about the gaps, and move on together.</p>
+    <div id="pollLive" style="display:none;margin-top:28px">
+      <div style="font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px" id="pollCount">Question 1 / 3</div>
+      <div class="pollq" id="pollQ">—</div>
+      <div class="scale"><div class="track"></div><div id="pollMarks"></div></div>
+      <div class="polelbl"><span id="pollL">left</span><span id="pollR">right</span></div>
+      <input type="range" min="0" max="100" value="50" class="pollslider" id="pollSlider" aria-label="Your position">
+      <div class="pollhint" id="pollHint">drag your face onto the line</div>
+      <div style="margin-top:18px;text-align:center"><button class="arcbtn" id="pollNext">Next question →</button></div>
+    </div>
+    <div id="pollOff" class="pollhint" style="margin-top:26px">Join a room via <strong>◉ Play together</strong> (bottom-left) to vote together.</div>
+  </div>
+</section>
+
 <!-- ══════════ WRAP-UP ══════════ -->
 <section class="band" id="wrap" data-name="Verdict">
   <div class="decor"><div class="par" data-speed="0.12" style="top:10%;right:4%;width:190px"><img class="aimg" data-a="planet1" alt=""></div>
@@ -558,6 +598,8 @@ h2.title{font-family:var(--disp);font-size:clamp(30px,5.2vw,58px);line-height:1;
   </div>
 </section>
 
+<div class="floatlayer" id="floatlayer"></div>
+<div class="reactbar" id="reactbar"></div>
 <div id="mp" class="mp"><button class="mp-tab" id="mpTab">◉ Play together</button><div class="mp-body" id="mpBody"></div></div>
 <div id="mtoast"></div>
 
@@ -809,6 +851,11 @@ document.getElementById('qAgain').onclick=()=>{qi=0;qScore=0;document.getElement
 showQ();
 
 /* ═══ wheel ═══ */
+const POLL=[
+ {q:'Games are mostly a waste of time — or genuinely good for you?',l:'Waste of time',r:'Good for you'},
+ {q:'Do you play to escape the world — or to connect with people?',l:'To escape',r:'To connect'},
+ {q:'What wins games — raw talent, or teamwork?',l:'Talent',r:'Teamwork'}
+];
 const WHEEL=[
   ['What game could you talk about for an hour?','What exactly makes it so good?'],
   ['Has a game ever taught you something real?','What, and did it transfer to life?'],
@@ -909,8 +956,11 @@ window.addEventListener('load', function(){
 
   let pid=localStorage.getItem('mp_pid'); if(!pid){pid=Math.random().toString(36).slice(2,8);localStorage.setItem('mp_pid',pid);}
   let myName=localStorage.getItem('mp_name')||'';
+  const EMO=['🐸','🦖','👽','🐙','🦊','🐼','🐷','🐵','🦁','🐧','🐢','🦄','🤖','👾','🐝','🦉'];
+  let myEmoji=localStorage.getItem('mp_emoji')||EMO[ihash(pid)%EMO.length];
   const myColor=PAL[ihash(pid)%PAL.length];
   let db=null, code=null, players={}, playersRef=null, pledgesRef=null, syncRefs=[];
+  let pollRef=null, reactRef=null, pollQi=0, pollWriteT=null;
 
   const ready = FIREBASE_CONFIG.databaseURL && typeof firebase!=='undefined';
   if(ready){ try{ firebase.initializeApp(FIREBASE_CONFIG); db=firebase.database(); }catch(e){ db=null; } }
@@ -924,10 +974,15 @@ window.addEventListener('load', function(){
     }
     if(!code){
       body.innerHTML='<h4>Play together</h4>'
+        +'<div style="font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-bottom:6px">Pick your face</div>'
+        +'<div class="emopick" id="mpEmo">'+EMO.map(e=>'<button data-e="'+e+'"'+(e===myEmoji?' class="on"':'')+'>'+e+'</button>').join('')+'</div>'
         +'<input id="mpName" placeholder="Your name" value="'+esc(myName)+'">'
         +'<button class="arcbtn" id="mpCreate" style="width:100%;margin-bottom:10px">Create a room</button>'
         +'<input id="mpCode" placeholder="or room code" maxlength="4" style="text-transform:uppercase">'
         +'<button class="arcbtn ghost" id="mpJoin" style="width:100%">Join</button>';
+      body.querySelectorAll('#mpEmo button').forEach(bn=>bn.onclick=()=>{
+        myEmoji=bn.dataset.e;localStorage.setItem('mp_emoji',myEmoji);
+        body.querySelectorAll('#mpEmo button').forEach(x=>x.classList.remove('on'));bn.classList.add('on');});
       body.querySelector('#mpCreate').onclick=()=>{setName();join(genCode());};
       body.querySelector('#mpJoin').onclick=()=>{setName();const c=(body.querySelector('#mpCode').value||'').trim().toUpperCase();if(c.length>=3)join(c);else mtoast('Enter a room code');};
     }else{
@@ -952,7 +1007,7 @@ window.addEventListener('load', function(){
     code=c; try{location.hash='s='+c;}catch(e){}
     mp.classList.add('open');
     const meRef=db.ref('sessions/'+code+'/players/'+pid);
-    meRef.set({name:myName||('Player'+pid.slice(0,2)), color:myColor, t:Date.now()});
+    meRef.set({name:myName||('Player'+pid.slice(0,2)), color:myColor, emoji:myEmoji, t:Date.now()});
     meRef.onDisconnect().remove();
     playersRef=db.ref('sessions/'+code+'/players');
     playersRef.on('value',s=>{players=s.val()||{};paintWho();});
@@ -960,12 +1015,17 @@ window.addEventListener('load', function(){
     pledgesRef.on('value',s=>paintWall(s.val()||{}));
     /* live game sync: wheel + quiz + match */
     netPush=(ch,data)=>db.ref('sessions/'+code+'/sync/'+ch).set(Object.assign({by:pid,t:Date.now()},data));
-    syncRefs=['wheel','quiz','match'].map(ch=>{
+    syncRefs=['wheel','quiz','match','pollnav'].map(ch=>{
       const r=db.ref('sessions/'+code+'/sync/'+ch);
       r.on('value',s=>{const v=s.val();if(!v||v.by===pid)return;
-        if(ch==='wheel')applyWheel(v); else if(ch==='quiz')applyQuiz(v); else if(ch==='match')applyMatch(v);});
+        if(ch==='wheel')applyWheel(v); else if(ch==='quiz')applyQuiz(v);
+        else if(ch==='match')applyMatch(v); else if(ch==='pollnav')gotoPoll(v.qi);});
       return r;
     });
+    document.getElementById('pollOff').style.display='none';
+    document.getElementById('pollLive').style.display='block';
+    gotoPoll(0);
+    reactInit();
     const wall=document.getElementById('wall'), post=document.getElementById('wallPost');
     if(wall)wall.style.display='block'; if(post)post.style.display='inline-block';
     render(); mtoast('You are in room '+code);
@@ -973,16 +1033,78 @@ window.addEventListener('load', function(){
   function leave(){
     if(playersRef)playersRef.off(); if(pledgesRef)pledgesRef.off();
     syncRefs.forEach(r=>r.off()); syncRefs=[]; netPush=null;
+    if(pollRef)pollRef.off(); if(reactRef)reactRef.off();
+    document.getElementById('reactbar').classList.remove('on');
+    document.getElementById('pollLive').style.display='none';
+    document.getElementById('pollOff').style.display='block';
     if(code)db.ref('sessions/'+code+'/players/'+pid).remove();
     code=null; try{location.hash='';}catch(e){}
     const wall=document.getElementById('wall'), post=document.getElementById('wallPost');
     if(wall)wall.style.display='none'; if(post)post.style.display='none';
     render();
   }
+
+  /* ── live poll ── */
+  function pollShow(){
+    const P=POLL[pollQi];
+    document.getElementById('pollQ').textContent=P.q;
+    document.getElementById('pollL').textContent=P.l;
+    document.getElementById('pollR').textContent=P.r;
+    document.getElementById('pollHint').textContent='drag your face onto the line — everyone sees it';
+    document.getElementById('pollCount').textContent='Question '+(pollQi+1)+' / '+POLL.length;
+    if(pollRef)pollRef.off();
+    pollRef=db.ref('sessions/'+code+'/poll/q'+pollQi);
+    pollRef.on('value',s=>renderPoll(s.val()||{}));
+  }
+  function renderPoll(obj){
+    const marks=document.getElementById('pollMarks'); if(!marks)return; marks.innerHTML='';
+    const entries=Object.entries(obj);
+    entries.forEach(([id,p],i)=>{
+      const d=document.createElement('div');d.className='pmark'+(id===pid?' me':'');
+      d.style.left=Math.max(0,Math.min(100,p.pos==null?50:p.pos))+'%';
+      d.style.top=(52+((i%3)-1)*20)+'px';
+      d.style.borderColor=id===pid?'var(--yellow)':(p.color||'var(--cyan)');
+      d.textContent=p.emoji||'🙂';d.title=p.name||'';
+      marks.appendChild(d);
+    });
+  }
+  function gotoPoll(qi){ pollQi=((qi%POLL.length)+POLL.length)%POLL.length; const sl=document.getElementById('pollSlider'); if(sl)sl.value=50; pollShow(); }
+
+  /* ── emoji reactions ── */
+  const REACT=['❤️','😂','🔥','😮','👏','💯'];
+  function reactInit(){
+    const bar=document.getElementById('reactbar'); bar.innerHTML='';
+    REACT.forEach(e=>{const btn=document.createElement('button');btn.textContent=e;btn.onclick=()=>sendReact(e);bar.appendChild(btn);});
+    bar.classList.add('on');
+    reactRef=db.ref('sessions/'+code+'/reactions');
+    reactRef.on('child_added',s=>{const v=s.val();if(!v||v.by===pid)return;if(Date.now()-(v.t||0)>6000)return;floatEmoji(v.emoji);});
+  }
+  function sendReact(e){
+    if(!db||!code)return;
+    floatEmoji(e);
+    const r=reactRef.push();r.set({emoji:e,by:pid,t:Date.now()});setTimeout(()=>r.remove(),6000);
+  }
+  function floatEmoji(e){
+    const layer=document.getElementById('floatlayer'); if(!layer)return;
+    const s=document.createElement('div');s.className='floatemo';s.textContent=e;
+    s.style.left=(8+Math.random()*84)+'%';s.style.fontSize=(24+Math.random()*18)+'px';
+    layer.appendChild(s);setTimeout(()=>s.remove(),2700);
+  }
+
+  /* poll controls (wired once) */
+  const pslider=document.getElementById('pollSlider');
+  if(pslider) pslider.addEventListener('input',e=>{
+    if(!db||!code)return;
+    const pos=+e.target.value;clearTimeout(pollWriteT);
+    pollWriteT=setTimeout(()=>db.ref('sessions/'+code+'/poll/q'+pollQi+'/'+pid).set({pos,emoji:myEmoji,name:myName||('Player'+pid.slice(0,2)),color:myColor,t:Date.now()}),110);
+  });
+  const pnext=document.getElementById('pollNext');
+  if(pnext) pnext.onclick=()=>{ if(!db||!code)return; const nq=(pollQi+1)%POLL.length;
+    db.ref('sessions/'+code+'/sync/pollnav').set({qi:nq,by:pid,t:Date.now()}); gotoPoll(nq); };
   function paintWho(){
     const box=document.getElementById('mpWho'); if(!box)return; box.innerHTML='';
     Object.values(players).forEach(p=>{const a=document.createElement('div');a.className='av';
-      a.style.background=p.color||'#888';a.textContent=initials(p.name);a.title=p.name||'';box.appendChild(a);});
+      a.style.borderColor=p.color||'#888';a.textContent=p.emoji||initials(p.name);a.title=p.name||'';box.appendChild(a);});
   }
   function paintWall(obj){
     const g=document.getElementById('wallGrid'); if(!g)return; g.innerHTML='';
